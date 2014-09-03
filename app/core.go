@@ -29,6 +29,7 @@ func Run(args []string) {
 
 	r.HandleFunc("/begin", routes.BeginAuthHandler)
 	r.HandleFunc("/complete_auth", routes.CompleteAuthHandler)
+	r.HandleFunc("/webhook", routes.HandleCallback)
 
 	http.Handle("/", r)
 	http.ListenAndServe(listenOn, nil)
