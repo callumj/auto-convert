@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/callumj/auto-convert/routes"
 	"github.com/callumj/auto-convert/shared"
+	"github.com/callumj/auto-convert/workers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -17,6 +18,7 @@ func Run(args []string) {
 	}
 
 	shared.InitDb()
+	workers.StartDispatcher(4)
 
 	listenOn := shared.Config.Listen
 	if len(listenOn) == 0 {
