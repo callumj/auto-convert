@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"github.com/callumj/auto-convert/lib"
 	"github.com/callumj/auto-convert/shared"
 	"log"
 )
@@ -36,7 +35,7 @@ func (dw DeltaWorker) Start() {
 				log.Printf("[%d] Will process %v\n", dw.ID, work.Uid)
 				acc := shared.FetchAccount(shared.Account{Uid: work.Uid})
 				if acc != nil {
-					lib.GetChangedFiles(acc)
+					GetChangedFiles(acc)
 				}
 			case <-dw.Shutdown:
 				// We have been asked to stop.

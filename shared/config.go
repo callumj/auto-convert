@@ -8,12 +8,18 @@ import (
 
 var Config Configuration
 
+type ExtensionMap struct {
+	Cmd       string
+	Extension string
+}
+
 type Configuration struct {
 	DropboxKey    string
 	DropboxSecret string
 	Maps          map[string]string
 	Listen        string
 	DbFile        string
+	Extensions    map[string]ExtensionMap
 }
 
 func LoadConfig(path string) bool {

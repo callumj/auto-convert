@@ -1,4 +1,4 @@
-package lib
+package workers
 
 import (
 	"encoding/json"
@@ -36,7 +36,7 @@ func GetChangedFiles(acc *shared.Account) {
 	} else {
 		commitCursor(fetched.Cursor, acc)
 	}
-	processFetched(fetched)
+	processFetched(fetched, acc)
 	for fetched.HasMore {
 		log.Printf("Fetched %d\n", len(fetched.Entries))
 		req, err = http.NewRequest("POST", fmt.Sprintf("https://api.dropbox.com/1/delta?cursor=%v", fetched.Cursor), nil)
@@ -52,20 +52,20 @@ func GetChangedFiles(acc *shared.Account) {
 			commitCursor(next.Cursor, acc)
 			fetched = next
 			log.Printf("Fetched %d\n", len(fetched.Entries))
-			processFetched(fetched)
+			processFetched(fetched, acc)
 		} else {
 			break
 		}
 	}
 }
 
-func processFetched(fetched *dropboxDeltaResponse) {
+func processFetched(fetched *dropboxDeltaResponse, acc *shared.Account) {
 	for _, item := range fetched.Entries {
 		switch v := item[0].(type) {
 		case string:
 			for src, _ := range shared.Config.Maps {
 				if strings.HasPrefix(v, src) {
-					log.Println(v)
+					DispatchFile(FileRequest{Uid: acc.Uid, Path: v, MatchedPath: src})
 				}
 			}
 		}
