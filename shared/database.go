@@ -47,11 +47,8 @@ func AddUpdateAccount(acc Account) {
 	existing := FetchAccount(acc)
 	if existing != nil {
 		existing.Token = acc.Token
-		_, err := activeMap.Update(existing)
-		if err != nil {
-			log.Printf("Failed to update account: %v\n", err)
-			return
-		}
+		existing.LastCursor = acc.LastCursor
+		UpdateAccount(existing)
 	} else {
 		err := activeMap.Insert(&acc)
 		if err != nil {
@@ -61,7 +58,15 @@ func AddUpdateAccount(acc Account) {
 	}
 }
 
+func UpdateAccount(acc *Account) {
+	_, err := activeMap.Update(acc)
+	if err != nil {
+		log.Printf("Failed to update account: %v\n", err)
+	}
+}
+
 type Account struct {
-	Uid   int64
-	Token string
+	Uid        int64
+	Token      string
+	LastCursor string
 }

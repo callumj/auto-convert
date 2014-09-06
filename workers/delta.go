@@ -6,10 +6,6 @@ import (
 	"log"
 )
 
-type DeltaRequest struct {
-	Uid int64
-}
-
 func NewDeltaWorker(id int, deltaTaskQueue chan chan DeltaRequest) DeltaWorker {
 	// Create, and return the worker.
 	worker := DeltaWorker{
@@ -40,7 +36,7 @@ func (dw DeltaWorker) Start() {
 				log.Printf("[%d] Will process %v\n", dw.ID, work.Uid)
 				acc := shared.FetchAccount(shared.Account{Uid: work.Uid})
 				if acc != nil {
-					lib.GetChangedFiles(*acc)
+					lib.GetChangedFiles(acc)
 				}
 			case <-dw.Shutdown:
 				// We have been asked to stop.

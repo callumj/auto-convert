@@ -4,6 +4,10 @@ import (
 	"log"
 )
 
+type DeltaRequest struct {
+	Uid int64
+}
+
 var DeltaQueue = make(chan DeltaRequest)
 
 var DeltaWorkerQueue chan chan DeltaRequest

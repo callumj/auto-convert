@@ -16,8 +16,14 @@ type dropboxDeltaResponse struct {
 	Reset   bool            `json:"reset"`
 }
 
-func GetChangedFiles(acc shared.Account) {
-	req, err := http.NewRequest("POST", "https://api.dropbox.com/1/delta", nil)
+func GetChangedFiles(acc *shared.Account) {
+	var url string
+	if len(acc.LastCursor) == 0 {
+		url = "https://api.dropbox.com/1/delta"
+	} else {
+		url = fmt.Sprintf("https://api.dropbox.com/1/delta?cursor=%v", acc.LastCursor)
+	}
+	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		log.Print(err)
 		return
@@ -27,6 +33,8 @@ func GetChangedFiles(acc shared.Account) {
 	fetched := processRequest(req)
 	if fetched == nil {
 		return
+	} else {
+		commitCursor(fetched.Cursor, acc)
 	}
 	processFetched(fetched)
 	for fetched.HasMore {
@@ -34,7 +42,6 @@ func GetChangedFiles(acc shared.Account) {
 		req, err = http.NewRequest("POST", fmt.Sprintf("https://api.dropbox.com/1/delta?cursor=%v", fetched.Cursor), nil)
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", acc.Token))
 
-		log.Printf("Requesting %v\n", req.URL.String())
 		if err != nil {
 			log.Print(err)
 			return
@@ -42,6 +49,7 @@ func GetChangedFiles(acc shared.Account) {
 
 		next := processRequest(req)
 		if next != nil {
+			commitCursor(next.Cursor, acc)
 			fetched = next
 			log.Printf("Fetched %d\n", len(fetched.Entries))
 			processFetched(fetched)
@@ -55,14 +63,18 @@ func processFetched(fetched *dropboxDeltaResponse) {
 	for _, item := range fetched.Entries {
 		switch v := item[0].(type) {
 		case string:
-			// v is a string here, so e.g. v + " Yeah!" is possible.
 			for src, _ := range shared.Config.Maps {
-				if strings.Contains(v, src) {
+				if strings.HasPrefix(v, src) {
 					log.Println(v)
 				}
 			}
 		}
 	}
+}
+
+func commitCursor(cursor string, acc *shared.Account) {
+	acc.LastCursor = cursor
+	shared.UpdateAccount(acc)
 }
 
 func processRequest(req *http.Request) *dropboxDeltaResponse {
