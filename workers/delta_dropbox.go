@@ -64,7 +64,8 @@ func processFetched(fetched *dropboxDeltaResponse, acc *shared.Account) {
 		switch v := item[0].(type) {
 		case string:
 			for src, _ := range shared.Config.Maps {
-				if strings.HasPrefix(v, src) {
+				path := fmt.Sprintf("%s/", src)
+				if strings.HasPrefix(v, path) {
 					DispatchFile(FileRequest{Uid: acc.Uid, Path: v, MatchedPath: src})
 				}
 			}
