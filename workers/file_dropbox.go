@@ -46,6 +46,7 @@ func processFile(fReq FileRequest) {
 			log.Println(err)
 			return
 		}
+		defer tempFile.Close()
 		defer os.Remove(tempFile.Name())
 
 		io.Copy(tempFile, resp.Body)
@@ -55,6 +56,7 @@ func processFile(fReq FileRequest) {
 			log.Println(err)
 			return
 		}
+		defer outTempFile.Close()
 		defer os.Remove(outTempFile.Name())
 		confedCmd := strings.Replace(matchingCmd.Cmd, "{{file}}", tempFile.Name(), 1)
 		confedCmd = strings.Replace(confedCmd, "{{out_file}}", outTempFile.Name(), 1)
